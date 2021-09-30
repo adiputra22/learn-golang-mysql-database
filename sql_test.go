@@ -169,3 +169,34 @@ func TestSqlInjectionSafe(t *testing.T) {
 		fmt.Println("Gagal login dengan username", username)
 	}
 }
+
+func TestSqlAutoincrement(t *testing.T) {
+	db := GetConnection()
+	defer db.Close()
+
+	ctx := context.Background()
+
+	email := "martin.adiputra@gmail.com"
+	comment := "hai ini comment"
+
+	sqlString := "INSERT INTO comments(email, comment) VALUES(?, ?)"
+
+	result, err := db.ExecContext(ctx, sqlString, email, comment)
+
+	if err != nil {
+		panic(err)
+	}
+
+	insertedId, err := result.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Success insert to comment with id", insertedId)
+	fmt.Println("rowsAffected", rowsAffected)
+}
