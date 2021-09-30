@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -199,4 +200,33 @@ func TestSqlAutoincrement(t *testing.T) {
 
 	fmt.Println("Success insert to comment with id", insertedId)
 	fmt.Println("rowsAffected", rowsAffected)
+}
+
+func TestPrepareStatement(t *testing.T) {
+	db := GetConnection()
+	defer db.Close()
+
+	ctx := context.Background()
+
+	sqlString := "INSERT INTO comments(email, comment) VALUES(?, ?)"
+	statement, err := db.PrepareContext(ctx, sqlString)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer statement.Close()
+
+	for i := 0; i < 10; i++ {
+		email := "adi" + strconv.Itoa(i) + "@gmail.com"
+		comment := "ini komen ke " + strconv.Itoa(i)
+
+		result, err := statement.ExecContext(ctx, email, comment)
+		if err != nil {
+			panic(err)
+		}
+
+		lastInsertId, _ := result.LastInsertId()
+		fmt.Println("Comment id: ", lastInsertId)
+	}
 }
